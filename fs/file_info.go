@@ -16,6 +16,10 @@ type FileInfo interface {
 	Ext() string   // extension of the file
 	Size() int64   // length in bytes for regular files; system-dependent for others
 	IsDir() bool   // abbreviation for Mode().IsDir()
+
+	CreationTime() time.Time   // creation time
+	LastAccessTime() time.Time // last access time
+	LastWriteTime() time.Time  // last write time
 }
 
 // FileInfo is a structure that contains information about a file.
@@ -29,6 +33,10 @@ type fileInfo struct {
 	size  int64
 	mode  gofs.FileMode
 	dir   bool
+
+	creationTime   time.Time
+	lastAccessTime time.Time
+	lastWriteTime  time.Time
 }
 
 // fileInfo should implement the FileInfo interface
@@ -38,21 +46,16 @@ var _ FileInfo = (*fileInfo)(nil)
 var _ gofs.FileInfo = (*fileInfo)(nil)
 
 // NewFileInfo creates a new FileInfo struct.
-func NewFileInfo() *fileInfo {
-	return new(fileInfo)
-}
-
-// FromPath extracts the file information from the path.
-func (f fileInfo) FromPath(path string) (FileInfo, error) {
+func NewFileInfo(path string) (*fileInfo, error) {
 	info, err := os.Stat(path)
 	if err != nil {
 		return nil, err
 	}
-	return f.FromFileInfo(info, filepath.Dir(path))
+	return NewFileInfoFromFileInfo(info, filepath.Dir(path))
 }
 
-// FromFileInfo extracts the file information from the file info.
-func (f fileInfo) FromFileInfo(info os.FileInfo, dir string) (FileInfo, error) {
+func NewFileInfoFromFileInfo(info os.FileInfo, dir string) (*fileInfo, error) {
+	f := fileInfo{}
 	f.name = info.Name()
 	f.path = filepath.Clean(dir)
 	f.abs, _ = Resolve(f.path)
@@ -61,7 +64,10 @@ func (f fileInfo) FromFileInfo(info os.FileInfo, dir string) (FileInfo, error) {
 	f.size = info.Size()
 	f.mode = info.Mode()
 	f.dir = isDir(info)
-	return f, nil
+	f.creationTime = getCreationTime(info)
+	f.lastAccessTime = getLastAccessTime(info) // Add last access time
+	f.lastWriteTime = getLastWriteTime(info)   // Add last write time
+	return &f, nil
 }
 
 // Name returns the base name of the file.
@@ -112,4 +118,19 @@ func (f fileInfo) IsDir() bool {
 // Sys returns the underlying data source.
 func (f fileInfo) Sys() any {
 	return nil
+}
+
+// CreationTime returns the creation time.
+func (f fileInfo) CreationTime() time.Time {
+	return f.creationTime
+}
+
+// LastAccessTime returns the last access time.
+func (f fileInfo) LastAccessTime() time.Time {
+	return f.lastAccessTime
+}
+
+// LastWriteTime returns the last write time.
+func (f fileInfo) LastWriteTime() time.Time {
+	return f.lastWriteTime
 }

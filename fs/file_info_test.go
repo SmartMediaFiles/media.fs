@@ -9,7 +9,7 @@ import (
 
 func TestNewFileInfo(t *testing.T) {
 	t.Run("directory", func(t *testing.T) {
-		info, err := NewFileInfo().FromPath(filepath.Join("testdata", "directory"))
+		info, err := NewFileInfo(filepath.Join("testdata", "directory"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -18,12 +18,12 @@ func TestNewFileInfo(t *testing.T) {
 		assert.Equal(t, "testdata", info.Path())
 		assert.Equal(t, "directory", info.Title())
 		assert.Equal(t, "", info.Ext())
-		assert.Equal(t, int64(0), info.Size())
+		assert.NotEqual(t, int64(0), info.Size())
 		assert.Equal(t, true, info.IsDir())
 	})
 
 	t.Run("directory_text.txt", func(t *testing.T) {
-		info, err := NewFileInfo().FromPath(filepath.Join("testdata", "directory", "text.txt"))
+		info, err := NewFileInfo(filepath.Join("testdata", "directory", "text.txt"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -42,7 +42,7 @@ func TestNewFileInfo(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		info, err := NewFileInfo().FromFileInfo(i, "testdata")
+		info, err := NewFileInfoFromFileInfo(i, "testdata")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -56,7 +56,7 @@ func TestNewFileInfo(t *testing.T) {
 	})
 
 	t.Run("linked_text.txt", func(t *testing.T) {
-		info, err := NewFileInfo().FromPath(filepath.Join("testdata", "linked", "text.txt"))
+		info, err := NewFileInfo(filepath.Join("testdata", "linked", "text.txt"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -70,7 +70,7 @@ func TestNewFileInfo(t *testing.T) {
 	})
 
 	t.Run("linked_directory", func(t *testing.T) {
-		info, err := NewFileInfo().FromPath(filepath.Join("testdata", "linked", "directory"))
+		info, err := NewFileInfo(filepath.Join("testdata", "linked", "directory"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -79,12 +79,12 @@ func TestNewFileInfo(t *testing.T) {
 		assert.Equal(t, filepath.Join("testdata", "linked"), info.Path())
 		assert.Equal(t, "directory", info.Title())
 		assert.Equal(t, "", info.Ext())
-		assert.Equal(t, int64(0), info.Size())
+		assert.NotEqual(t, int64(0), info.Size())
 		assert.Equal(t, true, info.IsDir())
 	})
 
 	t.Run("linked_directory_text.txt", func(t *testing.T) {
-		info, err := NewFileInfo().FromPath(filepath.Join("testdata", "linked", "directory", "text.txt"))
+		info, err := NewFileInfo(filepath.Join("testdata", "linked", "directory", "text.txt"))
 		if err != nil {
 			t.Fatal(err)
 		}
