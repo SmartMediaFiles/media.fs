@@ -7,7 +7,14 @@ import (
 	"time"
 )
 
+// This file defines the FileInfo interface and its implementation, providing
+// a comprehensive abstraction for file metadata. It is part of a cross-platform
+// file system utility package, designed to work seamlessly across different
+// operating systems by leveraging platform-specific implementations where necessary.
+
 // FileInfo is an interface that describes the file information.
+// It extends the standard go fs.FileInfo interface with additional methods
+// to retrieve file path, title, extension, and various timestamps.
 type FileInfo interface {
 	Name() string  // base name of the file (excluding the path)
 	Path() string  // path to the file (excluding the base name)
@@ -22,8 +29,9 @@ type FileInfo interface {
 	LastWriteTime() time.Time  // last write time
 }
 
-// FileInfo is a structure that contains information about a file.
-// It implements the FileInfo interface and the go fs.FileInfo interface.
+// fileInfo is a structure that contains information about a file.
+// It implements the FileInfo interface and the go fs.FileInfo interface,
+// providing a concrete representation of file metadata.
 type fileInfo struct {
 	name  string
 	path  string
@@ -46,6 +54,8 @@ var _ FileInfo = (*fileInfo)(nil)
 var _ gofs.FileInfo = (*fileInfo)(nil)
 
 // NewFileInfo creates a new FileInfo struct.
+// It takes a file path as input, retrieves the file's metadata using os.Stat,
+// and returns a fileInfo object populated with this metadata.
 func NewFileInfo(path string) (*fileInfo, error) {
 	info, err := os.Stat(path)
 	if err != nil {
@@ -54,6 +64,9 @@ func NewFileInfo(path string) (*fileInfo, error) {
 	return NewFileInfoFromFileInfo(info, filepath.Dir(path))
 }
 
+// NewFileInfoFromFileInfo creates a new fileInfo struct from an existing os.FileInfo object.
+// It extracts and computes various file attributes, such as name, path, size, and timestamps,
+// and returns a fully populated fileInfo object.
 func NewFileInfoFromFileInfo(info os.FileInfo, dir string) (*fileInfo, error) {
 	f := fileInfo{}
 	f.name = info.Name()
@@ -65,8 +78,8 @@ func NewFileInfoFromFileInfo(info os.FileInfo, dir string) (*fileInfo, error) {
 	f.mode = info.Mode()
 	f.dir = isDir(info)
 	f.creationTime = getCreationTime(info)
-	f.lastAccessTime = getLastAccessTime(info) // Add last access time
-	f.lastWriteTime = getLastWriteTime(info)   // Add last write time
+	f.lastAccessTime = getLastAccessTime(info)
+	f.lastWriteTime = getLastWriteTime(info)
 	return &f, nil
 }
 
@@ -107,7 +120,7 @@ func (f fileInfo) Mode() gofs.FileMode {
 
 // ModTime returns the modification time.
 func (f fileInfo) ModTime() time.Time {
-	return time.Time{}
+	return f.LastWriteTime()
 }
 
 // IsDir returns true if the file is a directory.
@@ -116,6 +129,8 @@ func (f fileInfo) IsDir() bool {
 }
 
 // Sys returns the underlying data source.
+// This is a placeholder implementation and can be modified to return
+// actual underlying data if needed.
 func (f fileInfo) Sys() any {
 	return nil
 }
