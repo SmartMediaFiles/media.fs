@@ -1,10 +1,11 @@
 package fs
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewFileInfo(t *testing.T) {
