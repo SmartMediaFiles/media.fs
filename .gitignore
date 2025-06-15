@@ -147,3 +147,8 @@ fabric.properties
 ### Cursor ###
 # Ignore cursor files
 .cursor/*
+
+
+### Test files ###
+# Ignore test files
+testdata/

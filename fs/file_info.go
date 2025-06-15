@@ -57,11 +57,16 @@ var _ gofs.FileInfo = (*fileInfo)(nil)
 // It takes a file path as input, retrieves the file's metadata using os.Stat,
 // and returns a fileInfo object populated with this metadata.
 func NewFileInfo(path string) (*fileInfo, error) {
-	info, err := os.Stat(path)
+	resolvedPath, err := Resolve(path)
+	if err != nil {
+		resolvedPath = path // Fallback to original path if symlink resolution fails
+	}
+
+	info, err := os.Stat(resolvedPath)
 	if err != nil {
 		return nil, err
 	}
-	return NewFileInfoFromFileInfo(info, filepath.Dir(path))
+	return NewFileInfoFromFileInfo(info, filepath.Dir(resolvedPath))
 }
 
 // NewFileInfoFromFileInfo creates a new fileInfo struct from an existing os.FileInfo object.
@@ -74,9 +79,12 @@ func NewFileInfoFromFileInfo(info os.FileInfo, dir string) (*fileInfo, error) {
 	f.abs, _ = Resolve(f.path)
 	f.ext = filepath.Ext(f.name)
 	f.title = f.name[:len(f.name)-len(f.ext)]
-	f.size = info.Size()
 	f.mode = info.Mode()
 	f.dir = isDir(info)
+
+	fullPath := filepath.Join(f.path, f.name)
+	f.size = GetSize(info, fullPath)
+
 	f.creationTime = getCreationTime(info)
 	f.lastAccessTime = getLastAccessTime(info)
 	f.lastWriteTime = getLastWriteTime(info)
