@@ -29,6 +29,18 @@ func setupTestData() {
 		panic("Failed to create testdata directory: " + err.Error())
 	}
 
+	// Create an empty directory
+	emptyDirPath := filepath.Join(testDataDir, "empty_dir")
+	if err := os.MkdirAll(emptyDirPath, 0755); err != nil {
+		panic("Failed to create 'empty_dir': " + err.Error())
+	}
+
+	// Create an empty file
+	emptyFilePath := filepath.Join(testDataDir, "empty_file.txt")
+	if err := os.WriteFile(emptyFilePath, []byte{}, 0644); err != nil {
+		panic("Failed to create empty_file.txt: " + err.Error())
+	}
+
 	// Create the 'directory' subdirectory
 	directoryPath := filepath.Join(testDataDir, "directory")
 	if err := os.MkdirAll(directoryPath, 0755); err != nil {

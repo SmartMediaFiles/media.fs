@@ -94,7 +94,7 @@ func Resolve(filePath string) (string, error) {
 
 	// Check if the file exists
 	if _, err := os.Stat(resolvedPath); err != nil {
-		return "", os.ErrNotExist
+		return "", err
 	}
 
 	return resolvedPath, nil

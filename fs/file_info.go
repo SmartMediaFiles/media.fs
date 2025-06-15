@@ -4,6 +4,7 @@ import (
 	gofs "io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -59,31 +60,30 @@ var _ gofs.FileInfo = (*fileInfo)(nil)
 func NewFileInfo(path string) (*fileInfo, error) {
 	resolvedPath, err := Resolve(path)
 	if err != nil {
-		resolvedPath = path // Fallback to original path if symlink resolution fails
+		return nil, err
 	}
 
 	info, err := os.Stat(resolvedPath)
 	if err != nil {
 		return nil, err
 	}
-	return NewFileInfoFromFileInfo(info, filepath.Dir(resolvedPath))
+	return newFileInfoFromFileInfo(info, resolvedPath)
 }
 
-// NewFileInfoFromFileInfo creates a new fileInfo struct from an existing os.FileInfo object.
+// newFileInfoFromFileInfo creates a new fileInfo struct from an existing os.FileInfo object.
 // It extracts and computes various file attributes, such as name, path, size, and timestamps,
 // and returns a fully populated fileInfo object.
-func NewFileInfoFromFileInfo(info os.FileInfo, dir string) (*fileInfo, error) {
+func newFileInfoFromFileInfo(info os.FileInfo, absPath string) (*fileInfo, error) {
 	f := fileInfo{}
 	f.name = info.Name()
-	f.path = filepath.Clean(dir)
-	f.abs, _ = Resolve(f.path)
+	f.path = filepath.Dir(absPath)
+	f.abs = absPath
 	f.ext = filepath.Ext(f.name)
-	f.title = f.name[:len(f.name)-len(f.ext)]
+	f.title = strings.TrimSuffix(f.name, f.ext)
 	f.mode = info.Mode()
 	f.dir = isDir(info)
 
-	fullPath := filepath.Join(f.path, f.name)
-	f.size = GetSize(info, fullPath)
+	f.size = GetSize(info, absPath)
 
 	f.creationTime = getCreationTime(info)
 	f.lastAccessTime = getLastAccessTime(info)
